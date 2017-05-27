@@ -5,13 +5,12 @@
 <body>
 <h1 align="center">The Changing Mirror - Interactive Stories</h1>
 
-<hr />
-
-<h2 align="center">Current Stories</h2>
-
 <?php
 require_once 'tools.php';
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
+
+include_once('pageheader.php');
 
 $StoryList = LoadStories();
 
@@ -24,6 +23,8 @@ for($i = 0; $i < mysql_num_rows($StoryList); ++$i)
 
 echo '</ul>';
 ?>
+
+<h2 align="center">Current Stories</h2>
 
 <p><a href="newstory.php">Create a new story</a></p>
 <hr />

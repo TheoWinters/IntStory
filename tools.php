@@ -2,13 +2,33 @@
 
 function OpenDatabase()
 {
-    require_once 'config.php';
+    require( dirname(__FILE__) . '\config.php' );
+    require( dirname(__FILE__) . '\sessionhandler.php' );
 
     $db_connection = mysql_connect($db_hostname, $db_ussernam, $db_password);
     if (!$db_connection)
         mysql_fatal_error("Unable to connect to MySQL");
 
     mysql_select_db($db_database) or mysql_fatal_error("Unable to select database");
+
+    ini_set('session.use_only_cookies', 1);
+
+    // Change the session name
+    session_name($session_name);
+
+    $session = new SessionHandler();
+
+    // add db data
+    $session->setDbDetails($db_hostname, $db_ussernam, $db_password, $db_database);
+
+    $session->setDbTable('session_handler_table');
+    session_set_save_handler(array($session, 'open'),
+                             array($session, 'close'),
+                             array($session, 'read'),
+                             array($session, 'write'),
+                             array($session, 'destroy'),
+                             array($session, 'gc'));
+    session_start();
 }
 
 function mysql_fatal_error($msg)
@@ -131,7 +151,11 @@ function AddPage($ParrentPageID, $Story_ID, $Title, $Contents, $UserID)
 
 function LoadUser($UserID)
 {
-    $val = mysql_query("SELECT * FROM user WHERE USER_ID='$UserID'");
+    if($UserID >= 1000)
+        $val = mysql_query("SELECT * FROM accounts WHERE ACCOUNT_ID='$UserID'");
+    else    
+        $val = mysql_query("SELECT * FROM user WHERE USER_ID='$UserID'");
+
     if(!$val)
         mysql_fatal_error("LoadUser Failed for $UserID");
 
@@ -247,6 +271,128 @@ function CheckLockPage_Links($LinkID)
 
     return false;
 }
+
+function FindAccountByName($UserName)
+{
+    $val = mysql_query("SELECT * FROM accounts WHERE USER_NAME='$UserName'");
+    if(!$val)
+        mysql_fatal_error("FindAccount Failed for $UserName");
+
+    return $val;
+}
+
+function FindAccountByEmail($UserEmail)
+{
+    $val = mysql_query("SELECT * FROM accounts WHERE EMAIL='$UserEmail'");
+    if(!$val)
+        mysql_fatal_error("FindAccount Failed for $UserEmail");
+
+    return $val;
+}
+
+function AddAccount($UserName, $UserEmail, $EncodedPW)
+{
+    $Query = "INSERT INTO accounts VALUES(NULL, '$UserName', '$EncodedPW', '$UserEmail', 0, 0, 0)";
+
+    $val = mysql_query($Query);
+    if(!$val)
+        mysql_fatal_error("AddUserWithPW Failed.");
+
+    return $val;
+}
+
+function EncodePassword($Password)
+{
+    $Encoded = md5("268E27056A3E52CF3755D193CBEB0594".$Password);
+    $Encoded = md5($Encoded."9517FD0BF8FAA655990A4DFFE358E13E");
+    $Encoded = strtoupper($Encoded);
+
+    return $Encoded;    
+}
+
+function ValidateAccount($UserID, $EncodedPW)
+{
+    $val = mysql_query("SELECT * FROM accounts WHERE USER_NAME='$UserID' AND PASSWORD='$EncodedPW'");
+    if(!$val)
+        mysql_fatal_error("ValidateAccount Failed for $UserID");
+
+    return $val;
+}
+
+
+function LogInUser($UserID, $UserName, $Access)
+{
+    $_SESSION['UserID'] = $UserID;
+    $_SESSION['UserName'] = $UserName;
+    $_SESSION['UserAccess'] = $Access;
+}
+
+function LogOutUser($UserID, $UserName, $Access)
+{
+    unset($_SESSION['UserID']);
+    unset($_SESSION['UserName']);
+    unset($_SESSION['UserAccess']);
+}
+
+function LoadCurrentSesson()
+{
+    if(isset($_SESSION['UserID']))
+        $ID = $_SESSION['UserID'];
+    else
+        return null;
+    
+    if(isset($_SESSION['UserName']))
+        $Name = $_SESSION['UserName'];
+    else
+        return null;
+    
+    if(isset($_SESSION['UserAccess']))
+        $Access = $_SESSION['UserAccess'];
+    else
+        return null;
+
+    return array(
+        "ID" => $ID,
+        "Name" => $Name,
+        "Access" => $Access,
+    );
+}
+
+
+function reCAPATCHA()
+{
+    return '';
+    //return '<div class="g-recaptcha" data-sitekey="6LdFkgcUAAAAADZTNXoVDTGOjRhFgvpZMDso8Qgq"></div>';
+}
+
+function reCAPATCHACheck()
+{
+    return 1;
+   $Response = $_POST['g-recaptcha-response'];
+   $RemoteIP = $_SERVER['REMOTE_ADDR'];
+   
+    $post_data = http_build_query(
+        array(
+            'secret' => '6LdFkgcUAAAAAJJEAKzCNRRLtRc62TrbwdoIau6G',
+            'response' => $Response,
+            'remoteip' => $RemoteIP
+        )
+    );
+
+    $verify = curl_init();
+    curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+    curl_setopt($verify, CURLOPT_POST, true);
+    curl_setopt($verify, CURLOPT_POSTFIELDS, $post_data);
+    curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($verify);
+    $result = json_decode($response);
+    
+    //echo $response;
+    
+    return $result->success;
+}
+
 
 function mysql_entities_string($string)
 {
