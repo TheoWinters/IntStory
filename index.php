@@ -26,7 +26,7 @@ for($i = 0; $i < mysql_num_rows($StoryList); ++$i)
 echo '</ul>';
 
 
-if(CanAddNewPages($Sesson))
+if(CanAddNewStories($Sesson))
 {
     echo '<p><a href="newstory.php">Create a new story</a></p>';
     echo '<hr />';

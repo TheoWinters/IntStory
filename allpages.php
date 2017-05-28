@@ -2,6 +2,7 @@
 require_once 'tools.php';
 
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
 
 if(!isset($_GET['StoryID']))
     PageError("Missing Story ID. Unable to load a page");
@@ -23,7 +24,13 @@ echo <<< _END
 <title>$StoryTitle</title>
 </head>
 <body>
-<h1>$StoryTitle</h1>
+<h1 align="center">$StoryTitle - All Pages</h1>
+_END;
+
+include_once('pageheader.php');
+
+echo <<< _END
+<h2>$StoryTitle</h2>
 <ul>
 _END;
 

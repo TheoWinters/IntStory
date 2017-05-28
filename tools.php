@@ -482,9 +482,13 @@ function CanAddNewPages($Sesson)
     if($Sesson == null)
         return false;
         
+    // Status = 1 is account is good standing
+    if($_SESSION['UserStatus'] != 1)
+        return false;
+        
     $Access = $_SESSION['UserAccess'];
     
-    if(!($Access & 0x02))
+    if($Access & 0x02)
         return true;
         
     return false;
@@ -495,9 +499,13 @@ function CanAddNewStories($Sesson)
     if($Sesson == null)
         return false;
 
+    // Status = 1 is account is good standing
+    if($_SESSION['UserStatus'] != 1)
+        return false;
+
     $Access = $_SESSION['UserAccess'];
     
-    if(!($Access & 0x01))
+    if($Access & 0x01)
         return true;
         
     return false;

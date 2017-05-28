@@ -2,6 +2,7 @@
 require_once 'tools.php';
 
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
 
 if(!isset($_GET['PageID']))
     PageError("Missing Page ID. Unable to load a page");
@@ -30,15 +31,21 @@ $PageContents = nl2br($PageData[4]);
 
 
 echo <<< _END
-<html>
-<head>
-<title>$StoryTitle - $PageTitle</title>
-</head>
-<body>
-<h1>$StoryTitle - $PageTitle</h1>
-$ParrentLink
-$PageContents
-<ol>
+    <html>
+    <head>
+    <title>$StoryTitle - $PageTitle</title>
+    </head>
+    <body>
+    <h1 align="center">$StoryTitle - $PageTitle</h1>
+_END;
+
+include_once('pageheader.php');
+
+echo <<< _END
+    <h2>$StoryTitle - $PageTitle</h2>
+    $ParrentLink
+    $PageContents
+    <ol>
 _END;
 
 for($i = 0; $i < mysql_num_rows($Links); ++$i)
@@ -50,14 +57,21 @@ for($i = 0; $i < mysql_num_rows($Links); ++$i)
     }
     else
     {
-        if($RowData[4] == 0 || time() > $RowData[4])
+        if(CanAddNewPages($Sesson))
         {
-            echo "<li><a href='newpage.php?LinkID=$RowData[0]'>". $RowData[3]."</a> <i>(blank)</i><br />";
-            //echo "<li><a href='newpage.php?LinkID=$RowData[0]&StoryID=$PageData[2]&ParrentID=$PageID'>". $RowData[3]."</a> <i>(blank)</i><br />";
+            if($RowData[4] == 0 || time() > $RowData[4])
+            {
+                echo "<li><a href='newpage.php?LinkID=$RowData[0]'>". $RowData[3]."</a> <i>(blank)</i><br />";
+                //echo "<li><a href='newpage.php?LinkID=$RowData[0]&StoryID=$PageData[2]&ParrentID=$PageID'>". $RowData[3]."</a> <i>(blank)</i><br />";
+            }
+            else
+            {
+                echo "<li><a href='newpage.php?LinkID=$RowData[0]'>". $RowData[3]."</a> <i>(locked)</i><br />";
+            }
         }
         else
         {
-            echo "<li><a href='newpage.php?LinkID=$RowData[0]'>". $RowData[3]."</a> <i>(locked)</i><br />";
+            echo "<li>". $RowData[3]."<br />";
         }
     }
 
