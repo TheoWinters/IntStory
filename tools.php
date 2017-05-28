@@ -428,7 +428,7 @@ function CanAddNewStories($Sesson)
 function reCAPATCHA()
 {
     return '';
-    //return '<div class="g-recaptcha" data-sitekey="6LdFkgcUAAAAADZTNXoVDTGOjRhFgvpZMDso8Qgq"></div>';
+    //return '<div class="g-recaptcha" data-sitekey=""></div>';
 }
 
 function reCAPATCHACheck()
@@ -439,7 +439,7 @@ function reCAPATCHACheck()
    
     $post_data = http_build_query(
         array(
-            'secret' => '6LdFkgcUAAAAAJJEAKzCNRRLtRc62TrbwdoIau6G',
+            'secret' => '',
             'response' => $Response,
             'remoteip' => $RemoteIP
         )
