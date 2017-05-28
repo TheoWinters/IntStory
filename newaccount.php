@@ -88,7 +88,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'create')
 
                 // Send confirmation e-mail
                 
-                header( 'Location: '.$refPath) ;
+                header( 'Location: activateaccount.php'.$refLink) ;
                 exit();
             }
         }

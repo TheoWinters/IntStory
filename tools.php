@@ -332,6 +332,28 @@ function UpdateAccountPW($AccountID, $EncodedPW)
     return $val;
 }
 
+function UpdateAccountStatus($AccountID, $Status)
+{
+    $Query = "UPDATE accounts SET STATUS='$Status' where ACCOUNT_ID='$AccountID'";
+
+    $val = mysql_query($Query);
+    if(!$val)
+        mysql_fatal_error("UpdateAccountEmail Failed.");
+
+    return $val;
+}
+
+function UpdateAccountAccess($AccountID, $Access)
+{
+    $Query = "UPDATE accounts SET ACCESS='$Access' where ACCOUNT_ID='$AccountID'";
+
+    $val = mysql_query($Query);
+    if(!$val)
+        mysql_fatal_error("UpdateAccountEmail Failed.");
+
+    return $val;
+}
+
 function EncodePassword($Password)
 {
     $Encoded = md5("268E27056A3E52CF3755D193CBEB0594".$Password);

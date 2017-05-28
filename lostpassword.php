@@ -110,7 +110,7 @@ else if(isset($_POST['action']) && $_POST['action'] == 'request')
             $EmailMessage = "Hello ".$UserData[1].".\r\n\r\nYou are receiving this notification because you have (or someone pretending to be you has) requested a password recovery for your account on 'The Changing Mirror' interactive story site.\r\n\r\nIf you did not request this notification then please ignore it, if you keep receiving it please contact the board administrator.\r\n\r\nTo change your password please visit this site:\r\n\r\nhttp://".$_SERVER['HTTP_HOST'].parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)."?keycode=".$ResetCode."&ID=".$ResetID."\r\n\r\nIf successful you will be able to login with the new password.\r\n\r\n";
             
             
-            if(mail($UserData[3], "Account Reactivation", $EmailMessage))
+            if(mail($UserData[3], "Password Reset", $EmailMessage))
             {
                 $Message = "Sending e-mail...";
                 $State = 1;
