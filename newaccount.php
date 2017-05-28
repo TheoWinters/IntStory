@@ -57,6 +57,10 @@ if(isset($_POST['action']) && $_POST['action'] == 'create')
     {
         $Message = "E-Mail Address Missing";
     }
+    else if(ValidatePasswordRules($Password) != "")
+    {
+        $Message = "Password isn't vaild for the site.<br>".ValidatePasswordRules($Password);
+    }
     else
     {   
         $UserInfo = FindAccountByName($UserName);

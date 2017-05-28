@@ -9,42 +9,82 @@ if($Sesson != null)
     LogOutUser();
 }
 
-$refPath = "";
-$refLink = "";
-
-if(isset($_GET['ref']))
-{
-    $refPath = $_GET['ref'];
-    $refLink = "?ref=".$refPath;
-}
-else if(isset($_SERVER['HTTP_REFERER']))
-{
-    $refPath = $_SERVER['HTTP_REFERER'];
-    $refLink = "?ref=".$refPath;
-}
-else
-{
-    $refPath = "http://".$_SERVER['HTTP_HOST'].dirname($_SERVER['REQUEST_URI']);
-    $refLink = "?ref=".$refPath;
-}
-
 $Message = "";
 $State = 0;
+
 $UserName = "";
 $EMail = "";
-
+$KeyCode = "";
+$ID = "";
 
 // actions
 // * None: request a lost password e-mail
 // * request: send the lost password e-mail, offer to resend
 // * reclaim: All them to reset the password
 
-if(isset($_POST['action']) && $_POST['action'] == 'request')
+if(isset($_GET['keycode']) && isset($_GET['ID']))
+{
+    $KeyCode = mysql_fix_string($_GET['keycode']);
+    $ID = mysql_fix_string($_GET['ID']);
+
+    // Handle the reset link
+    $Reset = GetMessage($ID);
+    if(mysql_num_rows($Reset) == 0)
+    {      
+        $Message = "Password Reset link is invalid.";
+        $State = 0;
+    }
+    else
+    {
+        $ResetData = mysql_fetch_row($Reset);
+        if(strcasecmp($ResetData[1], $KeyCode) != 0 || $ResetData[3] != 0x80)
+        {
+            $Message = "Password Reset link is invalid.";
+            $State = 0;
+        }
+        else
+        {
+            // Allow a three hour window for the password reset link to remain valid
+            if(time() > $ResetData[4] + 324000)
+            {
+                $Message = "Password Reset link has expired.";
+                $State = 0;
+            }
+            else
+            {
+                $UserInfo = LoadAccountByID($ResetData[2]);                
+                
+                if(mysql_num_rows($UserInfo) == 0)
+                {
+                    $Message = "Password Reset link is invalid.";
+                    $State = 0;               
+                }
+                else
+                {
+                    $_SESSION['MessageID'] = $ID;
+                    $_SESSION['UserStatus'] = 0xFF; // Temp Status, but otherwise invlaid
+                    $_SESSION['UserID'] = $ResetData[2];                
+                    
+                    header( 'Location: ./passwordreset.php') ;
+                    exit();
+                }
+            }
+        }
+    }
+}
+else if(isset($_POST['action']) && $_POST['action'] == 'request')
 {
     $UserName = mysql_fix_string($_POST['UserName']);
     $EMail = mysql_fix_string($_POST['EMail']);
     
-    if($UserName == "")
+    $reCAPTCHA = reCAPATCHACheck();
+
+    // Validate the input data
+    if($reCAPTCHA == false)
+    {
+        $Message = "reCAPTCHA failed.";
+    }    
+    else if($UserName == "")
     {
         $Message = "Username Missing";
     }
@@ -62,8 +102,8 @@ if(isset($_POST['action']) && $_POST['action'] == 'request')
         else
         {
             $UserData = mysql_fetch_row($UserInfo);
-            $ResetCode = EmailResetCode($UserData[1]);
-            $ResetData = AddReset($UserData[0], $ResetCode);
+            $ResetCode = EmailMessageCode($UserData[1]);
+            $ResetData = AddMessage($UserData[0], $ResetCode, 0x80); 
             $ResetID = mysql_insert_id();
             
             
@@ -90,6 +130,7 @@ echo <<< _END
 <html>
 <head>
 <title>Lost Password</title>
+<script src='https://www.google.com/recaptcha/api.js'></script>
 </head>
 <body>
 <h2>Lost Password</h2>
@@ -97,13 +138,14 @@ echo <<< _END
 <p>$Message</p>
 _END;
 
+// Request password e-mail
 if($State == 0)
 {
 $reCAPATCHAField = reCAPATCHA();
 
    
 echo <<< _END
-    <form method="post" action="lostpassword.php$refLink">
+    <form method="post" action="lostpassword.php">
         <input type="hidden" name="action" value="request"/>
 
         <p>Username: <input type="text" name="UserName" value="$UserName" size="40"></p>
@@ -116,7 +158,12 @@ echo <<< _END
 
     <p><a href="lostpassword.php">Lost Password</a> | <a href="newaccount.php">New Account</a></p>
 _END;
+}
 
+// Change Password
+if($State == 1)
+{
+    
 }
 
 echo <<< _END

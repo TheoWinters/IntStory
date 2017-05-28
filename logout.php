@@ -2,6 +2,7 @@
 
 require( dirname(__FILE__) . '\tools.php' );
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
 
 $refPath = "";
 $refLink = "";
@@ -20,6 +21,13 @@ else
 {
     $refPath = "http://".$_SERVER['HTTP_HOST'].dirname($_SERVER['REQUEST_URI']);
     $refLink = "?ref=".$refPath;
+}
+
+if($Sesson == null)
+{
+    // Not logged in, can't log out
+    header( 'Location: '.$refPath) ;
+    exit();    
 }
 
 if(isset($_POST['LogoutAction']) && $_POST['LogoutAction'] == 'Yes')

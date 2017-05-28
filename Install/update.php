@@ -57,20 +57,21 @@ if(!$val)
     mysql_fatal_error("Adding Account Table (S2) Failed");
 
 
-echo "<p>Adding <b>reset data</b></p>";
+echo "<p>Adding <b>message data</b> table</p>";
 
-$Query = "CREATE TABLE IF NOT EXISTS `reset_data` (
-        `RESET_ID` int(11) NOT NULL AUTO_INCREMENT,
+$Query = "CREATE TABLE IF NOT EXISTS `message_data` (
+        `MESSAGE_ID` int(11) NOT NULL AUTO_INCREMENT,
         `KEYCODE` char(128) NOT NULL,
         `ACCOUNT_ID` int(11) NOT NULL,
+        `TYPE` int(1) NOT NULL,
         `TIMESTAMP` int(255) NOT NULL,
-        PRIMARY KEY (`RESET_ID`),        
+        PRIMARY KEY (`MESSAGE_ID`),        
         KEY `KEYCODE` (`KEYCODE`)        
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;";
 
 $val = mysql_query($Query);
 if(!$val)
-    mysql_fatal_error("Adding Reset Data Table Failed");
+    mysql_fatal_error("Adding Message Data Table Failed");
 
 ?>
 

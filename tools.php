@@ -162,6 +162,7 @@ function LoadUser($UserID)
     return $val;
 }
 
+/*
 function FindUser($UserEmail)
 {
     $val = mysql_query("SELECT * FROM user WHERE EMAIL='$UserEmail'");
@@ -181,6 +182,7 @@ function AddUser($UserName, $UserEmail)
 
     return $val;
 }
+*/
 
 function LoadPage_Links($PageID)
 {
@@ -299,6 +301,15 @@ function FindAccountByEmail($UserEmail)
     return $val;
 }
 
+function LoadAccountByID($AccountID)
+{
+    $val = mysql_query("SELECT * FROM accounts WHERE ACCOUNT_ID='$AccountID'");
+    if(!$val)
+        mysql_fatal_error("LoadAccoun Failed");
+
+    return $val;
+}
+
 function AddAccount($UserName, $UserEmail, $EncodedPW)
 {
     $Query = "INSERT INTO accounts VALUES(NULL, '$UserName', '$EncodedPW', '$UserEmail', 0, 0, 0)";
@@ -306,6 +317,17 @@ function AddAccount($UserName, $UserEmail, $EncodedPW)
     $val = mysql_query($Query);
     if(!$val)
         mysql_fatal_error("AddUserWithPW Failed.");
+
+    return $val;
+}
+
+function UpdateAccountPW($AccountID, $EncodedPW)
+{
+    $Query = "UPDATE accounts SET PASSWORD='$EncodedPW' where ACCOUNT_ID='$AccountID'";
+
+    $val = mysql_query($Query);
+    if(!$val)
+        mysql_fatal_error("UpdateAccountEmail Failed.");
 
     return $val;
 }
@@ -319,9 +341,25 @@ function EncodePassword($Password)
     return $Encoded;    
 }
 
-function AddReset($UserID, $Keycode)
+// This function validates the password for whatever rules we have for them on the site
+function ValidatePasswordRules($Password)
 {
-    $Query = "INSERT INTO reset_data VALUES(NULL, '$Keycode', '$UserID', '".time()."')";
+    $Message = "";
+    
+    if(strlen($Password) < 8)
+        $Message = $Message."Password to short (Min 8 characters)";
+        
+    if(strlen($Password) > 128)
+        $Message = $Message."Password to long (Max 128 characters)";
+
+    return $Message;
+}
+
+// Type: 0x40 - Account Activation
+// Type: 0x80 - Password reset
+function AddMessage($UserID, $Keycode, $Type)
+{
+    $Query = "INSERT INTO message_data VALUES(NULL, '$Keycode', '$UserID', '$Type', '".time()."')";
 
     $val = mysql_query($Query);
     if(!$val)
@@ -330,7 +368,26 @@ function AddReset($UserID, $Keycode)
     return $val;
 }
 
-function EmailResetCode($UserName)
+function GetMessage($MessageID)
+{
+    $val = mysql_query("SELECT * FROM message_data WHERE MESSAGE_ID='$MessageID'");
+    if(!$val)
+        mysql_fatal_error("GetMessage Failed");
+
+    return $val;
+}
+
+function DeleteMessage($MessageID)
+{
+    $val = mysql_query("DELETE FROM message_data WHERE MESSAGE_ID='$MessageID'");
+    if(!$val)
+        mysql_fatal_error("DeleteMessage Failed");
+
+    return $val;
+}
+
+
+function EmailMessageCode($UserName)
 {
     $Encoded = md5("5A82FA3C8D3D4AD0B604430BD76BE2FEA5BFD199".time().$UserName);
     $Encoded = md5($Encoded."B8758F24B54B088E5F94336CEAD2EF8F76E009AB");
