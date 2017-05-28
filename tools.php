@@ -514,19 +514,21 @@ function CanAddNewStories($Sesson)
 
 function reCAPATCHA()
 {
-    return '';
-    //return '<div class="g-recaptcha" data-sitekey=""></div>';
+    require( dirname(__FILE__) . '\config.php' );
+
+    return '<div class="g-recaptcha" data-sitekey="'.$reCAPATCHASiteKey.'"></div>';
 }
 
 function reCAPATCHACheck()
 {
-    return 1;
+    require( dirname(__FILE__) . '\config.php' );
+
    $Response = $_POST['g-recaptcha-response'];
    $RemoteIP = $_SERVER['REMOTE_ADDR'];
    
     $post_data = http_build_query(
         array(
-            'secret' => '',
+            'secret' => $reCAPATCHASecret,
             'response' => $Response,
             'remoteip' => $RemoteIP
         )
