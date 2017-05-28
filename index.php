@@ -14,7 +14,9 @@ include_once('pageheader.php');
 
 $StoryList = LoadStories();
 
+echo '<h2 align="center">Current Stories</h2>';
 echo '<ul>';
+
 for($i = 0; $i < mysql_num_rows($StoryList); ++$i)
 {
     $RowData = mysql_fetch_row($StoryList);
@@ -22,12 +24,22 @@ for($i = 0; $i < mysql_num_rows($StoryList); ++$i)
 }
 
 echo '</ul>';
+
+
+if(CanAddNewPages($Sesson))
+{
+    echo '<p><a href="newstory.php">Create a new story</a></p>';
+    echo '<hr />';
+}
+else
+{
+    echo '<p>Create a new story</p>';
+}
+
 ?>
 
-<h2 align="center">Current Stories</h2>
 
-<p><a href="newstory.php">Create a new story</a></p>
-<hr />
+
 <p><a href="recentpages.php">Newest Pages</a></p>
 <hr />
 <div>

@@ -272,6 +272,15 @@ function CheckLockPage_Links($LinkID)
     return false;
 }
 
+function FindAccountByNameandEmail($UserName, $UserEmail)
+{
+    $val = mysql_query("SELECT * FROM accounts WHERE USER_NAME='$UserName' and EMAIL='$UserEmail'");
+    if(!$val)
+        mysql_fatal_error("FindAccount Failed for $UserName");
+
+    return $val;
+}
+
 function FindAccountByName($UserName)
 {
     $val = mysql_query("SELECT * FROM accounts WHERE USER_NAME='$UserName'");
@@ -310,6 +319,29 @@ function EncodePassword($Password)
     return $Encoded;    
 }
 
+function AddReset($UserID, $Keycode)
+{
+    $Query = "INSERT INTO reset_data VALUES(NULL, '$Keycode', '$UserID', '".time()."')";
+
+    $val = mysql_query($Query);
+    if(!$val)
+        mysql_fatal_error("AddReset Failed.");
+
+    return $val;
+}
+
+function EmailResetCode($UserName)
+{
+    $Encoded = md5("5A82FA3C8D3D4AD0B604430BD76BE2FEA5BFD199".time().$UserName);
+    $Encoded = md5($Encoded."B8758F24B54B088E5F94336CEAD2EF8F76E009AB");
+    $Encoded = strtolower($Encoded);
+
+    return $Encoded;    
+}
+
+
+
+
 function ValidateAccount($UserID, $EncodedPW)
 {
     $val = mysql_query("SELECT * FROM accounts WHERE USER_NAME='$UserID' AND PASSWORD='$EncodedPW'");
@@ -320,18 +352,20 @@ function ValidateAccount($UserID, $EncodedPW)
 }
 
 
-function LogInUser($UserID, $UserName, $Access)
+function LogInUser($UserID, $UserName, $Access, $Status)
 {
     $_SESSION['UserID'] = $UserID;
     $_SESSION['UserName'] = $UserName;
     $_SESSION['UserAccess'] = $Access;
+    $_SESSION['UserStatus'] = $Status;
 }
 
-function LogOutUser($UserID, $UserName, $Access)
+function LogOutUser()
 {
     unset($_SESSION['UserID']);
     unset($_SESSION['UserName']);
     unset($_SESSION['UserAccess']);
+    unset($_SESSION['UserStatus']);
 }
 
 function LoadCurrentSesson()
@@ -351,11 +385,43 @@ function LoadCurrentSesson()
     else
         return null;
 
+    if(isset($_SESSION['UserStatus']))
+        $Status = $_SESSION['UserStatus'];
+    else
+        return null;
+        
     return array(
         "ID" => $ID,
         "Name" => $Name,
         "Access" => $Access,
+        "Status" => $Status,
     );
+}
+
+function CanAddNewPages($Sesson)
+{
+    if($Sesson == null)
+        return false;
+        
+    $Access = $_SESSION['UserAccess'];
+    
+    if(!($Access & 0x02))
+        return true;
+        
+    return false;
+}
+
+function CanAddNewStories($Sesson)
+{
+    if($Sesson == null)
+        return false;
+
+    $Access = $_SESSION['UserAccess'];
+    
+    if(!($Access & 0x01))
+        return true;
+        
+    return false;
 }
 
 

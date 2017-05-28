@@ -80,7 +80,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'create')
                 $UserData = mysql_fetch_row($NewUser);
                 
                 // We are Live at 5.
-                LogInUser($UserData[0], $UserData[1], $UserData[4]);            
+                LogInUser($UserData[0], $UserData[1], $UserData[4], $UserData[5]);
 
                 // Send confirmation e-mail
                 
@@ -100,9 +100,6 @@ echo <<< _END
 </head>
 <body>
 <h2>Register a New Account</h2>
-
-<p>$refPath</p>
-<p>$refLink</p>
 
 <p>$Message</p>
 _END;

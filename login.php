@@ -54,7 +54,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'login')
         else
         {
             // We are Live at 5.
-            LogInUser($UserData[0], $UserData[1], $UserData[4]);            
+            LogInUser($UserData[0], $UserData[1], $UserData[4], $UserData[5]);
             
             header( 'Location: '.$refPath) ;
             exit();
@@ -79,7 +79,7 @@ echo <<< _END
 
 </form>
 
-<p><a href="lostpassword.php">Lost Password</a></p>
+<p><a href="lostpassword.php">Lost Password</a> | <a href="newaccount.php">New Account</a></p>
 
 <hr />
 <p><a href=".">Interactive Stories Homepage</a>.</p>
