@@ -1,16 +1,28 @@
 <?php
 require_once 'tools.php';
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
+$Message = "";
+
+if($Sesson == null)
+{
+    $Message = "You must have an account to add pages to the site.";
+}
+
+if(!CanAddNewPages($Sesson))
+{
+    $Message = "You are currently not allow to add new stories to the site";
+}
 
 if( !isset($_POST['ChapterTitle']) ||
-	!isset($_POST['ChapterContents']) ||
-	!isset($_POST['OptionCount']) )
+    !isset($_POST['ChapterContents']) ||
+    !isset($_POST['OptionCount']) )
 {
-	PageError("Missing Post data, unable to preview.");
+    PageError("Missing Post data, unable to preview.");
 }
 
 if(!isset($_GET['LinkID']))
-	PageError("Missing Link ID. Unable to load a page");
+    PageError("Missing Link ID. Unable to load a page");
 
 $LinkID = $_GET['LinkID'];
 
@@ -19,22 +31,22 @@ $ChapterContents = mysql_entities_string($_POST['ChapterContents']);
 $OptionCount = mysql_entities_string($_POST['OptionCount']);
 
 if($ChapterTitle == "")
-	PageError("Chapter Title is missing.");
+    PageError("Chapter Title is missing.");
 
 if($ChapterContents == "")
-	PageError("Chapter text is missing.");
+    PageError("Chapter text is missing.");
 
 if($OptionCount == 0)
-	PageError("Please provide the number of choices you would like this chapter to have.");
+    PageError("Please provide the number of choices you would like this chapter to have.");
 
 $Link = LoadPage_Link($LinkID);
 $LinkData = mysql_fetch_row($Link);
 
 if($LinkData[2] != 0)
-	PageError("Link ID is already pointing to a page. Someone probably just added that option.");
+    PageError("Link ID is already pointing to a page. Someone probably just added that option.");
 
 if(!CheckLockPage_Links($LinkID))
-	PageError("Looks like someone is already in the process of adding a new page for this chocie.");
+    PageError("Looks like someone is already in the process of adding a new page for this chocie.");
 
 
 $PageID = $LinkData[1];
@@ -58,6 +70,17 @@ echo <<< _END
 <title>New Chapter: Preview</title>
 </head>
 <body>
+_END;
+
+include_once('pageheader.php');
+
+if($Message != "")
+{
+    echo '<p>'.$Message.'</p>';
+}
+else
+{
+echo <<< _END
 
 <p> Here's a preview of your chapter, if it dosn't look right or something is missing you can go back and fix it.</p>
 
@@ -74,7 +97,7 @@ _END;
 
 for($i = 0; $i < $OptionCount; ++$i)
 {
-	echo "<li><input type='text' name='Option$i' size='80'>";
+    echo "<li><input type='text' name='Option$i' size='80'>";
 }
 
 
@@ -82,11 +105,16 @@ echo <<< _END
 </ol>
 <p><input type="submit" value="Next >>"></p>
 
-<input type=hidden name="ChapterTitle" 		value="$ChapterTitle"><p>
-<input type=hidden name="ChapterContents" 	value="$ChapterContents"><p>
-<input type=hidden name="OptionCount" 		value="$OptionCount"><p>
+<input type=hidden name="ChapterTitle"      value="$ChapterTitle"><p>
+<input type=hidden name="ChapterContents"   value="$ChapterContents"><p>
+<input type=hidden name="OptionCount"       value="$OptionCount"><p>
 
 </form>
+
+_END;
+}
+
+echo <<< _END
 
 <a href="abortnewpage.php?LinkID=$LinkID&PageID=$PageID">Cancel New Chapter</a>
 

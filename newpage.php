@@ -1,10 +1,22 @@
 <?php
 require_once 'tools.php';
-
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
+$Message = "";
+
+if($Sesson == null)
+{
+    $Message = "You must have an account to add pages to the site.";
+}
+
+if(!CanAddNewPages($Sesson))
+{
+    $Message = "You are currently not allow to add pages to the site";
+}
+
 
 if(!isset($_GET['LinkID']))
-	PageError("Missing Link ID. Unable to load a page");
+    PageError("Missing Link ID. Unable to load a page");
 
 $LinkID = $_GET['LinkID'];
 
@@ -12,10 +24,10 @@ $Link = LoadPage_Link($LinkID);
 $LinkData = mysql_fetch_row($Link);
 
 if($LinkData[2] != 0)
-	PageError("Link ID is already pointing to a page. Someone probably just added that option.");
+    PageError("Link ID is already pointing to a page. Someone probably just added that option.");
 
 if(!CheckLockPage_Links($LinkID))
-	PageError("Looks like someone is already in the process of adding a new page for this chocie.");
+    PageError("Looks like someone is already in the process of adding a new page for this chocie.");
 
 $PageID = $LinkData[1];
 
@@ -38,6 +50,17 @@ echo <<< _END
 <title>New Chapter</title>
 </head>
 <body>
+_END;
+
+include_once('pageheader.php');
+
+if($Message != "")
+{
+    echo '<p>'.$Message.'</p>';
+}
+else
+{
+echo <<< _END
 <h1 align="center">Parrent Chapter</h1>
 <div style="padding-left: 15pt; padding-right: 50pt;background-color:lightgray;">
 <h2>$StoryTitle - $PageTitle</h2>
@@ -58,7 +81,10 @@ $PageContents
 <p><input type="submit" value="Next >>"></p>
 
 </form>
+_END;
+}
 
+echo <<< _END
 <a href="abortnewpage.php?LinkID=$LinkID&PageID=$PageID">Cancel New Chapter</a>
 
 </body>
