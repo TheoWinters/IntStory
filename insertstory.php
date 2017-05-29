@@ -1,14 +1,29 @@
 <?php
 require_once 'tools.php';
 OpenDatabase();
+$Sesson = LoadCurrentSesson();
+$Message = "";
+$UserID = "";
+$JobState = 0;
+
+
+if($Sesson == null)
+{
+    $Message = "You must have an account to add pages to the site.";
+    $JobState = 1;
+}
+
+if(!CanAddNewStories($Sesson))
+{
+    $Message = "You are currently not allow to add new stories to the site";
+    $JobState = 1;
+}
 
 if( !isset($_POST['StoryTitle']) ||
     !isset($_POST['StoryDescription']) ||
     !isset($_POST['ChapterTitle']) ||
     !isset($_POST['ChapterContents']) ||
-    !isset($_POST['OptionCount']) ||
-    !isset($_POST['UserName']) ||
-    !isset($_POST['UserEmail']) )
+    !isset($_POST['OptionCount']) )
 {
     PageError("Missing Post data, unable to preview.");
 }
@@ -19,15 +34,6 @@ $StoryDescription = mysql_entities_string($_POST['StoryDescription']);
 $ChapterTitle = mysql_entities_string($_POST['ChapterTitle']);
 $ChapterContents = mysql_entities_string($_POST['ChapterContents']);
 $OptionCount = mysql_entities_string($_POST['OptionCount']);
-
-$UserName = mysql_entities_string($_POST['UserName']);
-$UserEmail = mysql_entities_string($_POST['UserEmail']);
-
-if($UserName == "")
-    PageError("User Name is missing.");
-
-if($UserEmail == "")
-    PageError("User E-mail is missing.");
 
 if($StoryTitle == "")
     PageError("Story is title missing.");
@@ -59,42 +65,28 @@ for($i = 0; $i < $OptionCount; ++$i)
 }
 
 
-// Okay, everything is up and running, so lets get this party started!
-
-// Step 1: Find or add the user
-$User = FindUser($UserEmail);
-$UserID = 0;
-if(mysql_num_rows($User) != 0)
+if($JobState == 0)
 {
-    // The e-mail is already in use, so use that
-    $RowData = mysql_fetch_row($User);
-    $UserID = $RowData[0];
+    $UserID = $Sesson['ID'];
+
+
+    // Step 1: Insert our new story
+    AddStory(mysql_fix_string($StoryTitle), mysql_fix_string($StoryDescription));
+    $StoryID = mysql_insert_id();
+
+    // Step 2: Insert the first page
+    AddPage(0, $StoryID, mysql_fix_string($ChapterTitle), mysql_fix_string($ChapterContents), $UserID);
+    $PageID = mysql_insert_id();
+
+    // Step 3: Add the page links
+    for($i = 0; $i < $OptionCount; ++$i)
+    {
+        AddPage_Links($PageID, mysql_fix_string($Option[$i]));
+    }
+
+    // Step 4: Update the page with the link to the first page
+    UpdateStory($StoryID, $PageID);
 }
-else
-{
-    AddUser(mysql_fix_string($UserName), mysql_fix_string($UserEmail));
-    $UserID = mysql_insert_id();
-}
-
-// Step 2: Insert our new story
-AddStory(mysql_fix_string($StoryTitle), mysql_fix_string($StoryDescription));
-$StoryID = mysql_insert_id();
-
-// Step 3: Insert the first page
-AddPage(0, $StoryID, mysql_fix_string($ChapterTitle), mysql_fix_string($ChapterContents), $UserID);
-$PageID = mysql_insert_id();
-
-// Step 4: Add the page links
-for($i = 0; $i < $OptionCount; ++$i)
-{
-    AddPage_Links($PageID, mysql_fix_string($Option[$i]));
-}
-
-// Step 5: Update the page with the link to the first page
-UpdateStory($StoryID, $PageID);
-
-
-
 
 echo <<< _END
 <html>
@@ -102,13 +94,22 @@ echo <<< _END
 <title>New Story: Added!</title>
 </head>
 <body>
+<h1 align="center">New Story - Added</h1>
 _END;
 
-echo "<p><b><a href='showpage.php?PageID=$PageID'>$StoryTitle</a></b> has been added to the site.</p>";
+include_once('pageheader.php');
+
+if($Message != "")
+{
+    echo '<p>'.$Message.'</p>';
+}
+else
+{
+    echo "<p><b><a href='showpage.php?PageID=$PageID'>$StoryTitle</a></b> has been added to the site.</p>";
+}
 
 echo <<< _END
 <p><a href=".">Interactive Stories Homepage</a>.</p>
-
 
 </body>
 </html>

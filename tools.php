@@ -63,7 +63,7 @@ function PageError($ErrorString)
 <head><title>Page Error</title></head>
 <body>
 <p>$ErrorString</p>
-<a href="$Ref">Pervious Page</a>
+<a href="$Ref">Previous Page</a>
 </body></html>
 _END;
 
@@ -450,22 +450,25 @@ function LogOutUser()
 function LoadCurrentSesson()
 {
     if(isset($_SESSION['UserID']))
+    {
         $ID = $_SESSION['UserID'];
+        $UserInfo = LoadAccountByID($ID);
+        if(mysql_num_rows($UserInfo) == 0)
+            return null;
+            
+        $UserData = mysql_fetch_row($UserInfo);
+        $Access = $UserData[4];
+        $Status = $UserData[5];
+
+        $_SESSION['UserAccess'] = $Access;
+        $_SESSION['UserStatus'] = $Status;
+
+    }
     else
         return null;
     
     if(isset($_SESSION['UserName']))
         $Name = $_SESSION['UserName'];
-    else
-        return null;
-    
-    if(isset($_SESSION['UserAccess']))
-        $Access = $_SESSION['UserAccess'];
-    else
-        return null;
-
-    if(isset($_SESSION['UserStatus']))
-        $Status = $_SESSION['UserStatus'];
     else
         return null;
         
