@@ -6,7 +6,8 @@ if($Sesson == null)
 else
 {
     echo '<p>Welcome '.$Sesson["Name"].'</p>';     
-    echo '<p><a href="userpanel.php">User Control Panel</a> | <a href="logout.php">Log Out</a></p>';
+    //echo '<p><a href="userpanel.php">User Control Panel</a> | <a href="logout.php">Log Out</a></p>';
+    echo '<p><a href="logout.php">Log Out</a></p>';
 }
 
 echo '<hr />'

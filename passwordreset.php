@@ -1,6 +1,6 @@
 <?php
 
-require( dirname(__FILE__) . '\tools.php' );
+require( dirname(__FILE__) . '/tools.php' );
 OpenDatabase();
 
 $Sesson = LoadCurrentSesson();

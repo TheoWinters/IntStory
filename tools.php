@@ -2,8 +2,8 @@
 
 function OpenDatabase()
 {
-    require( dirname(__FILE__) . '\config.php' );
-    require( dirname(__FILE__) . '\sessionhandler.php' );
+    require( dirname(__FILE__) . '/config.php' );
+    require( dirname(__FILE__) . '/sessionhandler.php' );
 
     $db_connection = mysql_connect($db_hostname, $db_ussernam, $db_password);
     if (!$db_connection)
@@ -90,7 +90,7 @@ function LoadStory($StoryID)
 
 function AddStory($Title, $Desc)
 {
-    $Query = "INSERT INTO stories VALUES(NULL, '$Title', '$Desc', 0, 0)";
+    $Query = "INSERT INTO stories VALUES(NULL, '$Title', '$Desc', 0, 1)";
 
     $val = mysql_query($Query);
     if(!$val)
@@ -517,14 +517,14 @@ function CanAddNewStories($Sesson)
 
 function reCAPATCHA()
 {
-    require( dirname(__FILE__) . '\config.php' );
+    require( dirname(__FILE__) . '/config.php' );
 
     return '<div class="g-recaptcha" data-sitekey="'.$reCAPATCHASiteKey.'"></div>';
 }
 
 function reCAPATCHACheck()
 {
-    require( dirname(__FILE__) . '\config.php' );
+    require( dirname(__FILE__) . '/config.php' );
 
    $Response = $_POST['g-recaptcha-response'];
    $RemoteIP = $_SERVER['REMOTE_ADDR'];

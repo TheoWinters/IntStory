@@ -1,5 +1,5 @@
 <?php
-require( dirname(__FILE__) . '\..\tools.php' );
+require( dirname(__FILE__) . '/../tools.php' );
 
 ?>
 
@@ -51,7 +51,7 @@ $val = mysql_query($Query);
 if(!$val)
     mysql_fatal_error("Adding Account Table Failed");
 
-$Query = "ALTER TABLE `Accounts` AUTO_INCREMENT = 10000;";
+$Query = "ALTER TABLE `accounts` AUTO_INCREMENT = 10000;";
 $val = mysql_query($Query);
 if(!$val)
     mysql_fatal_error("Adding Account Table (S2) Failed");

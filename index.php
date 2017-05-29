@@ -1,18 +1,20 @@
+<?php
+require_once 'tools.php';
+OpenDatabase();
+$Sesson = LoadCurrentSesson();
+
+$StoryList = LoadStories();
+
+echo <<< _END
 <html>
 <head>
 <title>The Changing Mirror - Interactive Stories</title>
 </head>
 <body>
 <h1 align="center">The Changing Mirror - Interactive Stories</h1>
-
-<?php
-require_once 'tools.php';
-OpenDatabase();
-$Sesson = LoadCurrentSesson();
+_END;
 
 include_once('pageheader.php');
-
-$StoryList = LoadStories();
 
 echo '<h2 align="center">Current Stories</h2>';
 echo '<ul>';
@@ -25,7 +27,6 @@ for($i = 0; $i < mysql_num_rows($StoryList); ++$i)
 
 echo '</ul>';
 
-
 if(CanAddNewStories($Sesson))
 {
     echo '<p><a href="newstory.php">Create a new story</a></p>';
@@ -36,10 +37,7 @@ else
     echo '<p>Create a new story</p>';
 }
 
-?>
-
-
-
+echo <<< _END
 <p><a href="recentpages.php">Newest Pages</a></p>
 <hr />
 <div>
@@ -63,3 +61,6 @@ else
 <p>Site created by Theo Winters.</p>
 </body>
 </html>
+_END;
+
+?>
